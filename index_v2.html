@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>闷油瓶追吴邪</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #ffe6ef;
+            text-align: center;
+            margin: 0;
+            padding: 10px;
+            /* 防止手机上长按或双击导致页面放大或选中文字 */
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        h2 {
+            margin: 5px 0;
+            font-size: 24px;
+        }
+        #s {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        /* 让 Canvas 在手机屏幕上自动适应宽度，最高不超过 480px */
+        canvas {
+            border: 2px solid pink;
+            background: #fff;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        #ov {
+            position: fixed;
+            inset: 0;
+            background: #ffdbe8cc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        #card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        #card button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #e75480;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* 📱 手机虚拟方向键布局 */
+        #controls {
+            margin: 15px auto 0;
+            width: 200px;
+            height: 150px;
+            position: relative;
+            display: block; /* 确保显示 */
+        }
+        .btn {
+            position: absolute;
+            width: 60px;
+            height: 50px;
+            background: #ffffff;
+            border: 2px solid pink;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #e75480;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 0px pink;
+            cursor: pointer;
+        }
+        /* 按下按钮时的视觉效果 */
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+        /* 四个按键的绝对定位 */
+        #btn-up    { top: 0; left: 70px; }
+        #btn-left  { top: 50px; left: 0; }
+        #btn-right { top: 50px; left: 140px; }
+        #btn-down  { top: 100px; left: 70px; }
+    </style>
+</head>
+<body>
+
+    <h2>❤️闷油瓶追吴邪❤️</h2>
+    <div id="s">好感度:0</div>
+    <div id="msg" style="height:36px;line-height:36px;color:#e75480;font-size:20px;font-weight:bold"></div>
+    
+    <canvas id="c" width="480" height="480"></canvas>
+
+    <div id="controls">
+        <div class="btn" id="btn-up">▲</div>
+        <div class="btn" id="btn-left">◀</div>
+        <div class="btn" id="btn-right">▶</div>
+        <div class="btn" id="btn-down">▼</div>
+    </div>
+
+    <div id="ov">
+        <div id="card">
+            <h3>吴邪：开始</h3>
+            <button id="start-btn" onclick="start()" ontouchstart="start()">开始追妻</button>
+        </div>
+    </div>
+
+<script>
+const cv = c, x = cv.getContext('2d'), g = 32, N = 15;
+const H = new Image(), B = new Image(), F = new Image();
+H.src = 'head.png'; 
+B.src = 'body_straight.png'; 
+F.src = 'food.png';
+
+let sn, fd, dx, dy, sc, run = false;
+const st = {
+    25: "闷油瓶，特讨厌！",
+    50: "如果你消失，至少我会发现。",
+    75: "入骨相思知不知",
+    100: "我们只是好久不见。",
+    125: "我的归属，我的此生所属。"
+};
+
+function showStory(t) {
+    msg.innerHTML = "💗 吴邪：" + t + " 💗";
+    setTimeout(() => msg.innerHTML = "", 5000);
+}
+
+function rf() {
+    while(1) {
+        let a = ~~(Math.random() * N), b = ~~(Math.random() * N);
+        if(!sn.some(v => v.x == a && v.y == b)) {
+            fd = {x: a, y: b};
+            return;
+        }
+    }
+}
+
+function init() {
+    sn = [{x:7, y:7}, {x:8, y:7}, {x:9, y:7}];
+    dx = -1; dy = 0; sc = 0;
+    s.textContent = '好感度:' + sc;
+    rf();
+}
+
+function start() {
+    ov.style.display = 'none';
+    init();
+    run = true;
+}
+
+// 🎮 方向控制核心逻辑
+function changeDirection(dir) {
+    if (!run) return;
+    if (dir == 'left' && dx != 1)   { dx = -1; dy = 0; }
+    if (dir == 'right' && dx != -1) { dx = 1;  dy = 0; }
+    if (dir == 'up' && dy != 1)     { dx = 0;  dy = -1; }
+    if (dir == 'down' && dy != -1)  { dx = 0;  dy = 1; }
+}
+
+// 1. 电脑键盘事件
+onkeydown = e => {
+    if (e.key == 'ArrowLeft')  changeDirection('left');
+    if (e.key == 'ArrowRight') changeDirection('right');
+    if (e.key == 'ArrowUp')    changeDirection('up');
+    if (e.key == 'ArrowDown')  changeDirection('down');
+}
+
+// 2. 手机触屏点击事件
+document.getElementById('btn-up').addEventListener('touchstart', (e) => { e.preventDefault(); changeDirection('up'); });
+document.getElementById('btn-down').addEventListener('touchstart', (e) => { e.preventDefault(); changeDirection('down'); });
+document.getElementById('btn-left').addEventListener('touchstart', (e) => { e.preventDefault(); changeDirection('left'); });
+document.getElementById('btn-right').addEventListener('touchstart', (e) => { e.preventDefault(); changeDirection('right'); });
+
+// 3. 电脑鼠标点击虚拟键（已修正漏掉的括号）
+document.getElementById('btn-up').addEventListener('mousedown', () => changeDirection('up'));
+document.getElementById('btn-down').addEventListener('mousedown', () => changeDirection('down'));
+document.getElementById('btn-left').addEventListener('mousedown', () => changeDirection('left'));
+document.getElementById('btn-right').addEventListener('mousedown', () => changeDirection('right'));
+
+// 游戏主循环
+setInterval(() => {
+    if (!run) return;
+    let h = { x: sn[0].x + dx, y: sn[0].y + dy };
+    
+    // 边界碰撞或自身碰撞检测
+    if (h.x < 0 || h.x >= N || h.y < 0 || h.y >= N || sn.some(v => v.x == h.x && v.y == h.y)) {
+        run = false;
+        ov.style.display = 'flex';
+        card.querySelector('h3').textContent = "游戏结束！最终好感度: " + sc;
+        card.querySelector('button').textContent = "重新开始";
+        return;
+    }
+    
+    sn.unshift(h);
+    
+    // 吃到吴邪（食物）
+    if (h.x == fd.x && h.y == fd.y) {
+        sc += 5;
+        s.textContent = '好感度:' + sc;
+        if (st[sc]) showStory(st[sc]);
+        rf();
+    } else {
+        sn.pop();
+    }
+    
+    // 画面绘制
+    x.clearRect(0, 0, cv.width, cv.height);
+    
+    // 画吴邪 (食物)
+    x.drawImage(F, fd.x * g, fd.y * g, g, g);
+    
+    // 画张起灵 (蛇)
+    sn.forEach((v, i) => {
+        x.drawImage(i == 0 ? H : B, v.x * g, v.y * g, g, g);
+    });
+}, 200);
+</script>
+
+</body>
+</html>
